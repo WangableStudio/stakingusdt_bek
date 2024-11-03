@@ -10,6 +10,7 @@ const User = require("./models/User");
 const depositRoutes = require("./routes/deposit.routes");
 const cors = require("cors");
 const Staking = require("./models/Staking");
+const axios = require('axios');
 
 const PORT = process.env.PORT || 5000;
 
