@@ -24,10 +24,16 @@ app.use("/api/user", userRouter);
 app.use("/api/deposit", depositRoutes);
 const start = async () => {
   try {
-    
+
 
     await mongoose.connect(process.env.dbURL);
-    
+
+    setInterval(() => {
+      axios.get('https://stakingusdt-bek.onrender.com/api/user/users')
+        .then(() => console.log('Pinged server'))
+        .catch(err => console.error(err));
+    }, 5 * 60 * 1000);
+
     // await User.findOneAndUpdate({ _id: "663b95c3c8d2adc724fb5515" }, { role: "ADMIN" });
     // const staking = await Staking.find()
     // console.log(staking);еу
