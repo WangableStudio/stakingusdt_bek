@@ -6,20 +6,20 @@ const { check, validationResult } = require("express-validator");
 const nodemailer = require("nodemailer");
 const uuid = require("uuid");
 const path = require("path");
+const InterestRateSetting = require("../models/InterestRateSetting");
 
 const depositRoutes = Router();
 
 depositRoutes.post("/", authMiddleware, async (req, res) => {
     const { price, operation, address, withdrawalDetails, currency, depositTerm } = req.body;
     let refbalance = req.body.refbalance;
-
     const refBoolean = refbalance === "true";
 
     let fileName = null;
     if (req.files && req.files.image) {
         const { image } = req.files;
         fileName = uuid.v4() + '.jpg';
-        image.mv(path.resolve(__dirname, "..", "static", fileName));
+        await image.mv(path.resolve(__dirname, "..", "static", fileName));
     }
 
     const userId = req.user.id;
@@ -29,23 +29,27 @@ depositRoutes.post("/", authMiddleware, async (req, res) => {
     }
 
     if (operation === "WITHDRAW") {
-        if (refBoolean) {
-            if (user.refbalance < +price) {
-                return res.status(400).json({ message: "Сумма вывода больше, чем баланс реферального счета" });
-            }
-        } else {
-            if (user.balance < +price) {
-                return res.status(400).json({ message: "Сумма вывода больше, чем баланс" });
-            }
+        if (refBoolean && user.refbalance < +price) {
+            return res.status(400).json({ message: "Сумма вывода больше, чем баланс реферального счета" });
+        } else if (!refBoolean && user.balance < +price) {
+            return res.status(400).json({ message: "Сумма вывода больше, чем баланс" });
         }
     } else {
-        if (refBoolean) {
-            if (user.refbalance < price) {
-                return res.status(400).json({ message: "Сумма зачисления больше, чем баланс реферала" });
-            }
+        if (refBoolean && user.refbalance < price) {
+            return res.status(400).json({ message: "Сумма зачисления больше, чем баланс реферала" });
+        }
+    }
+    const period = Number(1)
+    let interestSetting = await InterestRateSetting.findOne({ period })
+    if(!refBoolean){
+        // Получаем текущую процентную ставку для указанного периода
+        let interestSetting = await InterestRateSetting.findOne({ period });
+        if (!interestSetting) {
+            return res.status(404).json({ message: "Процентная ставка для указанного периода не найдена" });
         }
     }
 
+    // Создаем депозит с фиксированной процентной ставкой
     const deposit = await Deposit.create({
         price,
         operation,
@@ -53,11 +57,13 @@ depositRoutes.post("/", authMiddleware, async (req, res) => {
         withdrawalDetails,
         user: userId,
         currency,
-        refbalance,
+        refbalance: refBoolean,
         depositTerm,
+        interestRate: interestSetting.interestRate, // Фиксируем ставку на момент создания
         image: fileName
     });
-    return res.status(201).json(deposit)
+
+    return res.status(201).json(deposit);
 });
 
 depositRoutes.get("/", authMiddleware, async (req, res) => {
@@ -127,6 +133,15 @@ depositRoutes.post("/change-status/:id", authMiddleware, [check("price").isNumer
                 user.refbalance -= amountUSD;
             }
             user.balance += amountUSD;
+
+            const period = Number(deposit.depositTerm)
+            // Получаем текущую процентную ставку для указанного периода
+            const interestSetting = await InterestRateSetting.findOne({ period });
+            if (!interestSetting) {
+                return res.status(404).json({ message: "Процентная ставка для указанного периода не найдена" });
+            }
+
+            deposit.interestRate = interestSetting.interestRate
 
 
             const referrers = await User.find({ referrals: user._id });

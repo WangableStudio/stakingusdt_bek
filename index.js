@@ -8,6 +8,7 @@ const app = express();
 const corsMiddleware = require("./middleware/cors.middleware");
 const User = require("./models/User");
 const depositRoutes = require("./routes/deposit.routes");
+const interestRateRoutes = require("./routes/interest.rate.routes");
 const cors = require("cors");
 const Staking = require("./models/Staking");
 const axios = require('axios');
@@ -28,6 +29,7 @@ app.use(fileUpload({}))
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/deposit", depositRoutes);
+app.use("/api/", interestRateRoutes);
 
 const start = async () => {
   try {
@@ -37,7 +39,7 @@ const start = async () => {
 
     // await Deposit.updateMany(
     //   { interestRate: { $exists: false } },  // Убедитесь, что поле refbalance существует
-    //   { $set: { interestRate: 0 } }     // Установите значение поля refbalance в false
+    //   { $unset: { interestRate: 0 } }     // Установите значение поля refbalance в false
     // );     
 
     setInterval(() => {

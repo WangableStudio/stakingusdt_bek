@@ -4,8 +4,8 @@ const { Schema, model } = require("mongoose");
 // Таблица для процентных ставок
 const InterestRateSetting = new Schema({
   period: {
-    type: String,
-    enum: ["1_YEAR", "2_YEARS", "3_YEARS", "4_YEARS", "5_YEARS"], // Периоды для ставок
+    type: Number,
+    enum: [1, 2, 3, 4, 5], // Периоды для ставок
     required: true,
     unique: true,
   },
