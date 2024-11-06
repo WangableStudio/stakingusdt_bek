@@ -3,6 +3,7 @@ const { check } = require("express-validator");
 
 const registerValidator = [
     check("tel", "Некорректный номер телефона").isLength({ min: 11, max: 11 }),
+    check("firstName", "Имя и фамилия обязательны").isLength({ min: 1}),
     check("email", "Некоректный адрес электронной почты").isEmail(), //валидность почты
     check("password", "Пароль должен содержать от 6 до 15 символов").isLength({
         min: 6,

@@ -24,7 +24,10 @@ const Deposit = new Schema({
     type: String,
     enum: ["PROCESS", "DONE"],
     default: "PROCESS"
-  }
+  },
+  image: { type: String, default: null },
+  refbalance: { type: Boolean, default: false },
+  interestRate: { type: Number, required: true } 
 }, { timestamps: true });
 
 module.exports = model("Deposit", Deposit);

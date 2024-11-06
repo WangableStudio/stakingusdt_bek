@@ -11,6 +11,9 @@ const depositRoutes = require("./routes/deposit.routes");
 const cors = require("cors");
 const Staking = require("./models/Staking");
 const axios = require('axios');
+const path = require('path');
+const fileUpload = require('express-fileupload');
+const Deposit = require('./models/Deposit');
 
 const PORT = process.env.PORT || 5000;
 
@@ -20,14 +23,22 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(corsMiddleware);
 app.use(express.json());
+app.use(express.static(path.resolve(__dirname, 'static')))
+app.use(fileUpload({}))
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/deposit", depositRoutes);
+
 const start = async () => {
   try {
 
 
     await mongoose.connect(process.env.dbURL);
+
+    // await Deposit.updateMany(
+    //   { interestRate: { $exists: false } },  // Убедитесь, что поле refbalance существует
+    //   { $set: { interestRate: 0 } }     // Установите значение поля refbalance в false
+    // );     
 
     setInterval(() => {
       axios.get('https://stakingusdt-bek.onrender.com/api/user/users')
@@ -35,9 +46,9 @@ const start = async () => {
         .catch(err => console.error(err));
     }, 5 * 60 * 1000);
 
-    // await User.findOneAndUpdate({ _id: "663b95c3c8d2adc724fb5515" }, { role: "ADMIN" });
+    // await User.findOneAndUpdate({ _id: "6727a4b9853dc18ebff979bf" }, { role: "ADMIN" });
     // const staking = await Staking.find()
-    // console.log(staking);еу
+    // console.log(staking);
 
     app.listen(PORT, () => {
       console.log("server started on port ", PORT);

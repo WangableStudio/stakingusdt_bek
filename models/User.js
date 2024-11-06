@@ -6,11 +6,10 @@ const User = new Schema({
   password: { type: String, required: true }, //пароль
   secretWord: { type: String, required: true }, //секретное слово
   balance: { type: Number, default: 0 },
-  
+  refbalance: { type: Number, default: 0},
   firstName: { type: String, required: false },
   lastName: { type: String, required: false},
   surName: { type: String, required: false },
-
 
   role: {
     type: String,
