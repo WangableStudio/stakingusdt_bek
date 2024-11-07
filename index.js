@@ -48,7 +48,7 @@ const start = async () => {
         .catch(err => console.error(err));
     }, 5 * 60 * 1000);
 
-    // await User.findOneAndUpdate({ _id: "6727a4b9853dc18ebff979bf" }, { role: "ADMIN" });
+    // await User.findOneAndUpdate({ _id: "6677e2b4d9f5e008ca0561ce" }, { role: "ADMIN" });
     // const staking = await Staking.find()
     // console.log(staking);
 

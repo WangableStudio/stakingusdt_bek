@@ -41,7 +41,7 @@ depositRoutes.post("/", authMiddleware, async (req, res) => {
     }
     const period = Number(1)
     let interestSetting = await InterestRateSetting.findOne({ period })
-    if(!refBoolean){
+    if (!refBoolean) {
         // Получаем текущую процентную ставку для указанного периода
         let interestSetting = await InterestRateSetting.findOne({ period });
         if (!interestSetting) {
@@ -50,6 +50,44 @@ depositRoutes.post("/", authMiddleware, async (req, res) => {
     }
 
     // Создаем депозит с фиксированной процентной ставкой
+    return res.status(201).json('df');
+    // const deposit = await Deposit.create({
+    //     price,
+    //     operation,
+    //     address,
+    //     withdrawalDetails,
+    //     user: userId,
+    //     currency,
+    //     refbalance: refBoolean,
+    //     depositTerm,
+    //     interestRate: interestSetting.interestRate, // Фиксируем ставку на момент создания
+    //     image: fileName
+    // });
+
+    // return res.status(201).json(deposit);
+});
+const calculateExpectedIncome = (price, depositTerm, interestRate) => {
+    const annualPercent = interestRate / 100; // Преобразуем в доли
+    const yearlyIncome = price * annualPercent; // Годовой доход
+    const totalIncome = yearlyIncome * depositTerm; // Доход за весь срок
+
+    return totalIncome; 
+};
+
+depositRoutes.post("/period-withdraw", authMiddleware, async (req, res) => {
+    const { price, operation, address, withdrawalDetails, currency, depositTerm, status } = req.body;
+
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: "Пользователь не найден" });
+    }
+
+    const interestSetting = await InterestRateSetting.findOne({ period: depositTerm });
+    if (!interestSetting) {
+        return res.status(404).json({ message: "Процентная ставка для указанного периода не найдена" });
+    }
+    // Создаем депозит
     const deposit = await Deposit.create({
         price,
         operation,
@@ -57,18 +95,18 @@ depositRoutes.post("/", authMiddleware, async (req, res) => {
         withdrawalDetails,
         user: userId,
         currency,
-        refbalance: refBoolean,
+        refbalance: false,
         depositTerm,
-        interestRate: interestSetting.interestRate, // Фиксируем ставку на момент создания
-        image: fileName
+        interestRate: interestSetting.interestRate,
+        status,
     });
 
     return res.status(201).json(deposit);
 });
 
-depositRoutes.get("/", authMiddleware, async (req, res) => {
 
-    const deposit = await Deposit.find();
+depositRoutes.get("/", authMiddleware, async (req, res) => {
+    const deposit = await Deposit.find().populate('user');
     return res.json(deposit)
 });
 
@@ -103,7 +141,7 @@ depositRoutes.get('/transactions/:user', authMiddleware, async (req, res) => {
 
 depositRoutes.post("/change-status/:id", authMiddleware, [check("price").isNumeric().withMessage("Price should be a number")], async (req, res) => {
     const { id } = req.params;
-    const { price } = req.body;
+    const { price, periodbalance } = req.body;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -178,10 +216,12 @@ depositRoutes.post("/change-status/:id", authMiddleware, [check("price").isNumer
                     user.refbalance -= amountUSD;
                 }
             } else {
-                if (amountUSD > user.balance) {
-                    return res.status(400).json({ message: "Баланс пользователя недостаточно для вывода" });
-                } else {
-                    user.balance -= amountUSD;
+                if(!periodbalance){
+                    if (amountUSD > user.balance) {
+                        return res.status(400).json({ message: "Баланс пользователя недостаточно для вывода" });
+                    } else {
+                        user.balance -= amountUSD;
+                    }
                 }
             }
         }

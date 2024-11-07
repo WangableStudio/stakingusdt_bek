@@ -22,7 +22,7 @@ const Deposit = new Schema({
   },
   status: {
     type: String,
-    enum: ["PROCESS", "DONE"],
+    enum: ["PROCESS", "DONE", "WITHDRAW"],
     default: "PROCESS"
   },
   image: { type: String, default: null },
