@@ -50,21 +50,20 @@ depositRoutes.post("/", authMiddleware, async (req, res) => {
     }
 
     // Создаем депозит с фиксированной процентной ставкой
-    return res.status(201).json('df');
-    // const deposit = await Deposit.create({
-    //     price,
-    //     operation,
-    //     address,
-    //     withdrawalDetails,
-    //     user: userId,
-    //     currency,
-    //     refbalance: refBoolean,
-    //     depositTerm,
-    //     interestRate: interestSetting.interestRate, // Фиксируем ставку на момент создания
-    //     image: fileName
-    // });
+    const deposit = await Deposit.create({
+        price,
+        operation,
+        address,
+        withdrawalDetails,
+        user: userId,
+        currency,
+        refbalance: refBoolean,
+        depositTerm,
+        interestRate: interestSetting.interestRate, // Фиксируем ставку на момент создания
+        image: fileName
+    });
 
-    // return res.status(201).json(deposit);
+    return res.status(201).json(deposit);
 });
 const calculateExpectedIncome = (price, depositTerm, interestRate) => {
     const annualPercent = interestRate / 100; // Преобразуем в доли
