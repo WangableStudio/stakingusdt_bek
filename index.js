@@ -42,11 +42,11 @@ const start = async () => {
     //   { $unset: { interestRate: 0 } }     // Установите значение поля refbalance в false
     // );     
 
-    setInterval(() => {
-      axios.get('https://stakingusdt-bek.onrender.com/api/user/users')
-        .then(() => console.log('Pinged server'))
-        .catch(err => console.error(err));
-    }, 5 * 60 * 1000);
+    // setInterval(() => {
+    //   axios.get('https://stakingusdt-bek.onrender.com/api/user/users')
+    //     .then(() => console.log('Pinged server'))
+    //     .catch(err => console.error(err));
+    // }, 5 * 60 * 1000);
 
     // await User.findOneAndUpdate({ _id: "6677e2b4d9f5e008ca0561ce" }, { role: "ADMIN" });
     // const staking = await Staking.find()
